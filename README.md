@@ -1,4 +1,4 @@
 console-pysnake
 ===============
 
-The game "snake" for Linux and Windows console made with python.
+The game "snake" for Linux console build with python.
