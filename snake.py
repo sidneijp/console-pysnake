@@ -80,23 +80,26 @@ class Stage(object):
 
     def render(self):
         self.screen = list(self.field.data)
-        head_position = self._screenPosition(self.snake.head)
-        self.screen[head_position] = self.snake.head.char
-        for bodyPart in self.snake.body:
-            bodyPart_position = self._screenPosition(bodyPart)
-            self.screen[bodyPart_position] = bodyPart.char
         if len(self.apples) > 0 and self.apples[0] is not None:
             apple_position = self._screenPosition(self.apples[0])
             self.screen[apple_position] = self.apples[0].char
+        for bodyPart in self.snake.body:
+            bodyPart_position = self._screenPosition(bodyPart)
+            self.screen[bodyPart_position] = bodyPart.char
+        head_position = self._screenPosition(self.snake.head)
+        self.screen[head_position] = self.snake.head.char
 
     def paint(self):
         for unit in self.screen:
             print unit,
-        
-    def update(self):
+
+    def graphicsUpdate(self):
         os.system("clear")
-        self.paint()
         self.render()
+        self.paint()
+
+    def update(self):
+        self.graphicsUpdate()
         if self.t2 - self.t1 >= 0.25:
             self.snake.moveForward()
             self.t1 = time.time()
@@ -107,13 +110,14 @@ class Stage(object):
         position = self._screenPosition(self.snake.head)
         if self.screen[position] == '#' or self.screen[position] == 'o' or self._outOfField(position):
             self.snake.head.char = 'X'
-            os.system("clear")
-            self.render()
-            self.paint()
+            self.graphicsUpdate()
             return False
         elif self.screen[position] == '$':
             self.apples.pop(0)
             self.snake.addBodyPart()
+            if len(self.apples) == 0:
+                self.graphicsUpdate()
+                return False
         data_in = getInput()
         if data_in == '\x1b[C': # TURN RIGHT
             self.snake.turnRight()
@@ -210,7 +214,7 @@ class Snake(object):
 if __name__ == "__main__":
     snake = Snake(2, 2, 2)
 
-    stage = Stage('1', snake)
+    stage = Stage(sys.argv[1], snake)
 
     old_settings = termios.tcgetattr(sys.stdin)
     try:
