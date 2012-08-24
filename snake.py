@@ -1,4 +1,21 @@
 # encoding: utf-8
+"""
+PySnake
+
+author: Sidnei Pereira
+email: sidi.jp@gmail.com
+
+thanks to:
+
+-Graham King for the article 'Non blocking console input in Python and Java'
+http://www.darkcoding.net/software/non-blocking-console-io-is-not-possible/
+
+-Patrick Gillespie for the TAAG webapp. I used it to create the ASCIIArt, turning the game less ugly.
+http://patorjk.com/software/taag/
+
+'It's made with love by a hard student and hard worker without time to do it. Enjoy! =P'
+"""
+
 import os
 import time
 import sys
@@ -48,14 +65,23 @@ class Apple(object):
         self.char = '$'
 
 class Stage(object):
-    def __init__(self, stage, snake):
+    def __init__(self, stage):
         self.field = Field(stage)
         self.apples = self._loadApples(stage)
-        self.snake = snake
+        self.snake = self._loadSnake(stage)
         self.screen = list(self.field.data)
         self.t1 = time.time()
         self.t2 = self.t1
 
+    def _loadSnake(self, fname):
+        fname = 'stages/%s/snake' % (fname,)
+        f = file(fname, 'r')
+        line = f.readline()
+        parameters = line.split(',')
+        for i, parameter in enumerate(parameters):
+            parameters[i] = int(parameter)
+        return Snake(*parameters)
+        
     def _loadApples(self, fname):
         fname = 'stages/%s/apples' % (fname,)
         f = file(fname, 'r')
@@ -65,13 +91,12 @@ class Stage(object):
             for i, value in enumerate(line):
                 line[i] = int(value)
             apple = Apple(*line)
-            print apple.x, apple.y
             apples.append(apple)
         f.close()
         return apples
 
     def _screenPosition(self, element):
-        return element.x + element.y * (self.field.heigth+2)
+        return (element.x+1) + (element.y+1) * (self.field.heigth+2)
 
     def _outOfField(self, position):
         if self.screen[position] == '|' or self.screen[position] == '-':
@@ -135,8 +160,8 @@ class Head(object):
     def __init__(self, x, y, direction):
         self.x = x
         self.y = y
-        self.old_x = None
-        self.old_y = None
+        self.old_x = self.x#None
+        self.old_y = self.y#None
         self.direction = direction
         self.char = Head.CHARS[self.direction]
 
@@ -156,8 +181,8 @@ class BodyPart(object):
     def __init__(self, parent):
         self.x = parent.old_x
         self.y = parent.old_y
-        self.old_x = None
-        self.old_y = None
+        self.old_x = self.x 
+        self.old_y = self.y
         self.parent = parent
         self.char = 'o'
 
@@ -168,9 +193,11 @@ class BodyPart(object):
         self.y = self.parent.old_y
 
 class Snake(object):
-    def __init__(self, x, y, direction):
+    def __init__(self, x, y, direction, size):
         self.head = Head(x, y, direction)
         self.body = []
+        for i in range(size):
+            self.addBodyPart()
 
     def addBodyPart(self):
         tail = self._getTail()
@@ -212,9 +239,7 @@ class Snake(object):
             bodyPart.moveForward()
 
 if __name__ == "__main__":
-    snake = Snake(2, 2, 2)
-
-    stage = Stage(sys.argv[1], snake)
+    stage = Stage(sys.argv[1])
 
     old_settings = termios.tcgetattr(sys.stdin)
     try:
