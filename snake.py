@@ -19,7 +19,7 @@ class Field(object):
 
     def _loadField(self, fname):
         fname = 'stages/%s/field' % (fname,)
-        f = file(fname, 'r')
+        f = open(fname, 'r')
         stage = f.readlines()
         f.close()
         return stage
@@ -58,14 +58,14 @@ class Stage(object):
 
     def _loadApples(self, fname):
         fname = 'stages/%s/apples' % (fname,)
-        f = file(fname, 'r')
+        f = open(fname, 'r')
         apples = []
         for line in f.readlines():
             line = line.split(',')
             for i, value in enumerate(line):
                 line[i] = int(value)
             apple = Apple(*line)
-            print apple.x, apple.y
+            print(apple.x, apple.y)
             apples.append(apple)
         f.close()
         return apples
@@ -91,7 +91,7 @@ class Stage(object):
 
     def paint(self):
         for unit in self.screen:
-            print unit,
+            print(unit, end='')
 
     def graphicsUpdate(self):
         os.system("clear")
